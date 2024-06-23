@@ -88,5 +88,5 @@ Mkfile.old
 dkms.conf
 
 # Build files
-# !build/.gitkeep
-# build/
+!build/.gitkeep
+build/
