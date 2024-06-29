@@ -8,6 +8,8 @@ set(CORE "lib/${MCU}/core/src")
 target_sources(${EXE_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/${CTRL}/mainController.c
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/uartDriver.c
+
     ${PROJECT_SOURCE_DIR}/${CORE}/startup_stm32f303k8tx.s
     ${PROJECT_SOURCE_DIR}/${CORE}/stm32f3xx_it.c
     ${PROJECT_SOURCE_DIR}/${CORE}/syscalls.c
@@ -38,6 +40,7 @@ target_link_options(${EXE_NAME} PRIVATE
 
 target_link_libraries(${EXE_NAME} PRIVATE
     ${MCU}_HAL
+    UTILS
 )
 
 if(ENABLE_FREERTOS)

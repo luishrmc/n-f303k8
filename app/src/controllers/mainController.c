@@ -1,5 +1,6 @@
 /* Private includes ----------------------------------------------------------*/
 #include "mainController.h"
+#include "uartDriver.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -7,11 +8,10 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
+uartDriver_t uart2;
 
 /**
  * @brief  The application entry point.
@@ -30,7 +30,11 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    MX_USART2_UART_Init();
+
+    for (uint8_t i = 1; i < 4; i++)
+    {
+        enqueue(&uart2.tx, i);
+    }
 
     uint32_t tim = 0xFFFF;
 
@@ -85,43 +89,6 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-    {
-        Error_Handler();
-    }
-}
-
-/**
- * @brief USART2 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_USART2_UART_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    __HAL_RCC_USART2_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    /**USART2 GPIO Configuration
-    PA2     ------> USART2_TX
-    PA15     ------> USART2_RX
-    */
-    GPIO_InitStruct.Pin = VCP_TX_Pin | VCP_RX_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    huart2.Instance = USART2;
-    huart2.Init.BaudRate = 38400;
-    huart2.Init.WordLength = UART_WORDLENGTH_8B;
-    huart2.Init.StopBits = UART_STOPBITS_1;
-    huart2.Init.Parity = UART_PARITY_NONE;
-    huart2.Init.Mode = UART_MODE_TX_RX;
-    huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-    huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-    huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-    if (HAL_UART_Init(&huart2) != HAL_OK)
     {
         Error_Handler();
     }

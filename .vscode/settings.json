@@ -6,7 +6,7 @@
     
     "C_Cpp.errorSquiggles": "disabled",
     "cmake.configureOnOpen": false,
-    "cortex-debug.variableUseNaturalFormat": false,
+    "cortex-debug.variableUseNaturalFormat": true,
     "files.associations": {
         "sleep.h": "c",
         "task.h": "c",
@@ -62,6 +62,9 @@
         "lptimservice.h": "c",
         "beaconcontroller.h": "c",
         "prototype.h": "c",
-        "stm32f1xx.h": "c"
+        "stm32f1xx.h": "c",
+        "stm32f3xx.h": "c",
+        "stm32f303x8.h": "c",
+        "uartdriver.h": "c"
     },
 }

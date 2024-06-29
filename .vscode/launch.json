@@ -41,6 +41,7 @@
             "searchDir": [],
             "runToEntryPoint": "main",
             "showDevDebugOutput": "raw",
+            "preLaunchTask": "Compile - Debug",
         }
     ],
     "inputs": [

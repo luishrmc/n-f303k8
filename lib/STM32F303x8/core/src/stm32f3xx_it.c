@@ -1,5 +1,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f3xx_it.h"
+#include "stm32f3xx_hal.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -15,7 +16,7 @@
 /* Private user code ---------------------------------------------------------*/
 
 /* External variables --------------------------------------------------------*/
-
+extern UART_HandleTypeDef huart2;
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -102,6 +103,14 @@ void SysTick_Handler(void)
 {
 
   HAL_IncTick();
+}
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart2);
 }
 
 /******************************************************************************/
