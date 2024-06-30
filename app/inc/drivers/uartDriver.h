@@ -27,4 +27,5 @@ typedef struct
 } uartDriver_t;
 
 void udInit(uartDriver_t *self, uInst instance);
-void udTx(uartDriver_t *selfl);
+uint8_t udTx(uartDriver_t *self);
+uint8_t udRx(uartDriver_t *self, uint8_t* data);

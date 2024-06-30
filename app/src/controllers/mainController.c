@@ -1,6 +1,8 @@
 /* Private includes ----------------------------------------------------------*/
 #include "mainController.h"
 #include "uartDriver.h"
+#include "tf10120Service.h"
+#include "stdio.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -30,13 +32,13 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-
-    for (uint8_t i = 1; i < 4; i++)
-    {
-        enqueue(&uart2.tx, i);
-    }
-
     uint32_t tim = 0xFFFF;
+
+    udInit(&uart2, UART2);
+    tfsInit();
+    tfsSet(sMETHOD, 0);
+    HAL_Delay(100);
+    tfsRead(rDIST);
 
     /* Infinite loop */
     while (1)
@@ -50,6 +52,7 @@ int main(void)
         {
             tim--;
         }
+        tfsGetDist();
     }
 }
 

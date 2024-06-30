@@ -1,10 +1,22 @@
+/**
+ * @file queue.h
+ * @author luis (luishenrique.8804@gmail.com)
+ * @brief
+ * @version 0.1
+ * @date 2024-06-29
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
+
 #ifndef QUEUE_H
 #define QUEUE_H
 
 #define QUEUE_SIZE 32
 #include "stdint.h"
 
-typedef struct {
+typedef struct
+{
     uint8_t items[QUEUE_SIZE];
     int8_t front;
     int8_t rear;

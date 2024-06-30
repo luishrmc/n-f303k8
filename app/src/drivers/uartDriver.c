@@ -13,12 +13,24 @@
 #include <stdlib.h>
 #include "stm32f3xx_hal.h"
 #include "stm32f303x8.h"
-
+#include <string.h>
 #define USART2_RX GPIO_PIN_2
 #define USART2_TX GPIO_PIN_15
 #define USART2_PORT GPIOA
-#define PRINTF_TRACE int __io_putchar(int ch)
 
+#define USART1_RX GPIO_PIN_10
+#define USART1_TX GPIO_PIN_9
+#define USART1_PORT GPIOA
+
+#ifdef __GNUC__
+/* With GCC, small printf (option LD Linker->Libraries->Small printf
+   set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar( int ch )
+#else
+#define PUTCHAR_PROTOTYPE int fputc( int ch, FILE *f )
+#endif /* __GNUC__ */
+
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 uint8_t *uRxData1;
 uint8_t *uRxData2;
@@ -44,6 +56,36 @@ void udInit(uartDriver_t *self, uInst instance)
 
     case UART1:
     {
+        __HAL_RCC_USART1_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+
+        GPIO_InitStruct.Pin = USART1_TX | USART1_RX;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+        HAL_GPIO_Init(USART1_PORT, &GPIO_InitStruct);
+
+        huart1.Instance = USART1;
+        huart1.Init.BaudRate = 9600;
+        huart1.Init.WordLength = UART_WORDLENGTH_8B;
+        huart1.Init.StopBits = UART_STOPBITS_1;
+        huart1.Init.Parity = UART_PARITY_NONE;
+        huart1.Init.Mode = UART_MODE_TX_RX;
+        huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+        huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+        huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+        huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+        if (HAL_UART_Init(&huart1) != HAL_OK)
+        {
+            Error_Handler();
+        }
+
+        HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(USART1_IRQn);
+
+        uRxData1 = &self->rxData;
+        HAL_UART_Receive_IT(&huart1, &self->rxData, 1);
         break;
     }
 
@@ -87,40 +129,58 @@ void udInit(uartDriver_t *self, uInst instance)
     }
 }
 
-void udTx(uartDriver_t *self)
+uint8_t udTx(uartDriver_t *self)
 {
     uint8_t data;
     switch (self->inst)
     {
     case UART1:
     {
+        if (dequeue(&self->tx, &data))
+            HAL_UART_Transmit(&huart1, (uint8_t *)&data, 1, 0xFFFF);
+        else
+            return 0;
         break;
     }
 
     case UART2:
     {
-        if (dequeue(&self->tx, &data) == 1)
+        if (dequeue(&self->tx, &data))
             HAL_UART_Transmit(&huart2, (uint8_t *)&data, 1, 0xFFFF);
+        else
+            return 0;
         break;
     }
 
     default:
         break;
     }
+    return 1;
+}
+
+uint8_t udRx(uartDriver_t *self, uint8_t *data)
+{
+    if (dequeue(&self->rx, data))
+        return 1;
+    else
+        return 0;
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     /* Prevent unused argument(s) compilation warning */
     UNUSED(huart);
-
-    if (huart->Instance == USART2)
+    uartDriver_t *uart;
+    if (huart->Instance == USART1)
     {
-        uartDriver_t *uart;
-        uart = container_of(uRxData2, uartDriver_t, rxData);
-        enqueue(&uart->rx, uart->rxData);
-        HAL_UART_Receive_IT(&huart2, &uart->rxData, 1);
+        uart = container_of(uRxData1, uartDriver_t, rxData);
     }
+    else if (huart->Instance == USART2)
+    {
+        uart = container_of(uRxData2, uartDriver_t, rxData);
+    }
+    enqueue(&uart->rx, uart->rxData);
+    HAL_UART_Receive_IT(huart, &uart->rxData, 1);
 }
 
 /**
@@ -128,7 +188,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
  * @param  None
  * @retval None
  */
-PRINTF_TRACE
+PUTCHAR_PROTOTYPE
 {
     HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
     return ch;

@@ -10,6 +10,8 @@ target_sources(${EXE_NAME} PRIVATE
 
     ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/uartDriver.c
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/${SERV}/tf10120Service.c
+
     ${PROJECT_SOURCE_DIR}/${CORE}/startup_stm32f303k8tx.s
     ${PROJECT_SOURCE_DIR}/${CORE}/stm32f3xx_it.c
     ${PROJECT_SOURCE_DIR}/${CORE}/syscalls.c

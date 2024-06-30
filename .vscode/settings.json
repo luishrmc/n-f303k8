@@ -65,6 +65,8 @@
         "stm32f1xx.h": "c",
         "stm32f3xx.h": "c",
         "stm32f303x8.h": "c",
-        "uartdriver.h": "c"
+        "uartdriver.h": "c",
+        "tf1020service.h": "c",
+        "tf10120service.h": "c"
     },
 }
