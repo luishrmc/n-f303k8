@@ -94,10 +94,3 @@ add_subdirectory(lib)
 if(ENABLE_FREERTOS)
     CPMAddPackage("gh:FreeRTOS/FreeRTOS-Kernel#V11.1.0")
 endif()
-
-# ------------------------------------ UNITY TEST ------------------------------------ #
-include(CTest)
-enable_testing()
-
-# ! THE TOOLCHAIN IS CHANGED, KEEP THIS BLOCK AT THE END OF THE FILE !
-add_subdirectory(tests)

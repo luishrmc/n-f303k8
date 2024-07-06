@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "intelliSenseMode": "linux-gcc-x86",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++20",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/app/inc/controllers",
+                "${workspaceFolder}/app/inc/drivers",
+                "${workspaceFolder}/app/inc/services",
+                "${workspaceFolder}/lib/STM32F303x8/core/inc",
+                "${workspaceFolder}/lib/STM32F303x8/hal-driver/Inc",
+                "${workspaceFolder}/lib/utilities/queue"
+
+            ]
+        }
+    ],
+    "version": 4,
+    "enableConfigurationSquiggles": true
+}

@@ -6,11 +6,13 @@ set(DRV "src/drivers")
 set(CORE "lib/${MCU}/core/src")
 
 target_sources(${EXE_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/${CTRL}/mainController.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/${CTRL}/commCtrl.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/${CTRL}/mainCtrl.c
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/uartDriver.c
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/${SERV}/tf10120Service.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/canDrv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/i2cDrv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/spiDrv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/${DRV}/usartDrv.c
 
     ${PROJECT_SOURCE_DIR}/${CORE}/startup_stm32f303k8tx.s
     ${PROJECT_SOURCE_DIR}/${CORE}/stm32f3xx_it.c
