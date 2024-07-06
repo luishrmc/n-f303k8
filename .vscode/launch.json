@@ -5,34 +5,9 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug - Test",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceRoot}/build/tests/${input:pickTest}",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceRoot}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "preLaunchTask": "Compile - Debug",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
             "name": "Debug - MCU",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceRoot}/build/app/blink.elf",
+            "executable": "${workspaceRoot}/build/app/communication.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "stlink",
@@ -42,14 +17,7 @@
             "runToEntryPoint": "main",
             "showDevDebugOutput": "raw",
             "preLaunchTask": "Compile - Debug",
-        }
-    ],
-    "inputs": [
-        {
-            "id": "pickTest",
-            "type": "promptString",
-            "description": "NAME OF YOUR TEST FILE",
-            "default": "TEST_FOO"
+            "svdPath": "${workspaceRoot}/config/svd/STM32F303.svd"
         }
     ]
 }

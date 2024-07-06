@@ -68,7 +68,7 @@ void udInit(usartDrv_t *self, uInst instance)
         HAL_GPIO_Init(USART1_PORT, &GPIO_InitStruct);
 
         huart1.Instance = USART1;
-        huart1.Init.BaudRate = 9600;
+        huart1.Init.BaudRate = 115200;
         huart1.Init.WordLength = UART_WORDLENGTH_8B;
         huart1.Init.StopBits = UART_STOPBITS_1;
         huart1.Init.Parity = UART_PARITY_NONE;
@@ -82,7 +82,7 @@ void udInit(usartDrv_t *self, uInst instance)
             Error_Handler();
         }
 
-        HAL_NVIC_SetPriority(USART1_IRQn, 10, 0);
+        HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(USART1_IRQn);
 
         uRxData1 = &self->rxData;

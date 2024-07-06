@@ -15,10 +15,22 @@
 #define __COMMCTRL_H
 
 /* Includes ------------------------------------------------------------------*/
-
+#include <stdint.h>
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
+
+typedef enum
+{
+    CMD_PING = 0x31,
+    CMD_PONG = 0x32
+} opCode_t;
+
+typedef struct
+{
+    uint8_t buff[16];
+    uint8_t idx;
+} usartComm_t;
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -27,6 +39,7 @@
 /* Exported functions prototypes ---------------------------------------------*/
 void commCtrlInit(void);
 void commCtrlRun(void);
+void commCtrlCmd(opCode_t cmd, uint8_t* data);
 
 /* Private defines -----------------------------------------------------------*/
 
