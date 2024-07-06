@@ -37,7 +37,7 @@ void commCtrlRun(void)
         {
             if (u1Comm.buff[u1Comm.idx] == END_BYTE)
             {
-                commCtrlCmd(u1Comm.buff[1], u1Comm.buff[2]);
+                commCtrlCmd(u1Comm.buff[1], &u1Comm.buff[2]);
                 memset(&u1Comm, 0, sizeof(u1Comm));
             }
             else

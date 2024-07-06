@@ -9,32 +9,33 @@
  *
  */
 
+/* Includes ------------------------------------------------------------------*/
 #include "usartDrv.h"
 #include <stdlib.h>
 #include "stm32f3xx_hal.h"
 #include "stm32f303x8.h"
 #include <string.h>
 
-#define USART2_RX GPIO_PIN_2
-#define USART2_TX GPIO_PIN_15
-#define USART2_PORT GPIOA
+/* Private includes ----------------------------------------------------------*/
 
+/* Private typedef -----------------------------------------------------------*/
+
+/* Private define ------------------------------------------------------------*/
 #define USART1_RX GPIO_PIN_10
 #define USART1_TX GPIO_PIN_9
 #define USART1_PORT GPIOA
 
+#define USART2_RX GPIO_PIN_2
+#define USART2_TX GPIO_PIN_15
+#define USART2_PORT GPIOA
+/* Private macro -------------------------------------------------------------*/
 #ifdef __GNUC__
 /* With GCC, small printf (option LD Linker->Libraries->Small printf
    set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar( int ch )
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #else
-#define PUTCHAR_PROTOTYPE int fputc( int ch, FILE *f )
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
-
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-uint8_t *uRxData1;
-uint8_t *uRxData2;
 
 // declaração da macro offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) & ((TYPE *)0)->MEMBER)
@@ -43,6 +44,21 @@ uint8_t *uRxData2;
 #define container_of(ptr, type, member) ({            \
  const __typeof( ((type *)0)->member ) *__mptr = (ptr);    \
  (type *)( (char *)__mptr - offsetof(type,member) ); })
+
+/* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
+uint8_t *uRxData1;
+uint8_t *uRxData2;
+
+/* Private function prototypes -----------------------------------------------*/
+PUTCHAR_PROTOTYPE
+{
+    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
+    return ch;
+}
+
+/* Private user code ---------------------------------------------------------*/
 
 void udInit(usartDrv_t *self, uInst instance)
 {
@@ -179,15 +195,4 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
     enqueue(&uart->rx, uart->rxData);
     HAL_UART_Receive_IT(huart, &uart->rxData, 1);
-}
-
-/**
- * @brief  Retargets the C library printf function to the USART.
- * @param  None
- * @retval None
- */
-PUTCHAR_PROTOTYPE
-{
-    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
-    return ch;
 }

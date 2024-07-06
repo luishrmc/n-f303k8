@@ -106,6 +106,13 @@ void SysTick_Handler(void)
   HAL_IncTick();
 }
 
+/******************************************************************************/
+/* STM32F3xx Peripheral Interrupt Handlers                                    */
+/* Add here the Interrupt Handlers for the used peripherals.                  */
+/* For the available peripheral interrupt handler names,                      */
+/* please refer to the startup file (startup_stm32f3xx.s).                    */
+/******************************************************************************/
+
 /**
  * @brief This function handles USART1 global interrupt.
  */
@@ -121,10 +128,3 @@ void USART2_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&huart2);
 }
-
-/******************************************************************************/
-/* STM32F3xx Peripheral Interrupt Handlers                                    */
-/* Add here the Interrupt Handlers for the used peripherals.                  */
-/* For the available peripheral interrupt handler names,                      */
-/* please refer to the startup file (startup_stm32f3xx.s).                    */
-/******************************************************************************/

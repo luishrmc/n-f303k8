@@ -9,9 +9,16 @@
  *
  */
 
-#include "stdint.h"
-#include "queue.h"
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __USARTDRV_H
+#define __USARTDRV_H
 
+/* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
+#include "queue.h"
+/* Private includes ----------------------------------------------------------*/
+
+/* Exported types ------------------------------------------------------------*/
 typedef enum
 {
     DRV_USART1,
@@ -26,6 +33,15 @@ typedef struct
     Queue tx;
 } usartDrv_t;
 
+/* Exported constants --------------------------------------------------------*/
+
+/* Exported macro ------------------------------------------------------------*/
+
+/* Exported functions prototypes ---------------------------------------------*/
 void udInit(usartDrv_t *self, uInst instance);
 uint8_t udTx(usartDrv_t *self);
-uint8_t udRx(usartDrv_t *self, uint8_t* data);
+uint8_t udRx(usartDrv_t *self, uint8_t *data);
+
+/* Private defines -----------------------------------------------------------*/
+
+#endif /* __USARTDRV_H */
