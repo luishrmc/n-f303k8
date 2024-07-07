@@ -20,10 +20,12 @@
 /* Private define ------------------------------------------------------------*/
 #define START_BYTE '#'
 #define END_BYTE '$'
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 comm_t u1Comm;
+
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
@@ -63,9 +65,9 @@ void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data)
         self->u1.txBuff[1] = CMD_PONG;
         self->u1.txBuff[2] = END_BYTE;
         self->u1.txSize = 3;
-        self->u1.rxSize = 3;
         // udTxBlck(&self->u1);
-        udTxIT(&self->u1);
+        // udTxIT(&self->u1);
+        udTxDMA(&self->u1);
         break;
     }
 
@@ -76,7 +78,8 @@ void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data)
         self->u1.txBuff[2] = END_BYTE;
         self->u1.txSize = 3;
         // udTxBlck(&self->u1);
-        udTxIT(&self->u1);
+        // udTxIT(&self->u1);
+        udTxDMA(&self->u1);
         break;
     }
 
@@ -88,11 +91,12 @@ void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data)
 void commCtrlInit(void)
 {
     memset(&u1Comm, 0, sizeof(comm_t));
-    udInit(&u1Comm.u1, DRV_USART1);
+    udInit(&u1Comm.u1, DRV_USART2);
 
     u1Comm.u1.txBuff[0] = START_BYTE;
     u1Comm.u1.txBuff[1] = CMD_PING;
     u1Comm.u1.txBuff[2] = END_BYTE;
     u1Comm.u1.txSize = 3;
-    udTxBlck(&u1Comm.u1);
+    // udTxBlck(&u1Comm.u1);
+    // udTxDMA(&u1Comm.u1);
 }

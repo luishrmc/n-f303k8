@@ -48,8 +48,10 @@ void udInit(usartDrv_t *self, uInst instance);
 void udDefConf(usartDrv_t *self);
 uint8_t udRxIT(usartDrv_t *self);
 uint8_t udRxBlck(usartDrv_t *self);
+uint8_t udRxDMA(usartDrv_t *self);
 uint8_t udTxIT(usartDrv_t *self);
 uint8_t udTxBlck(usartDrv_t *self);
+uint8_t udTxDMA(usartDrv_t *self);
 
 /* Private defines -----------------------------------------------------------*/
 

@@ -18,6 +18,8 @@
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart2_tx;
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -127,4 +129,20 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   HAL_UART_IRQHandler(&huart2);
+}
+
+/**
+ * @brief This function handles DMA1 channel6 global interrupt.
+ */
+void DMA1_Channel6_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart2_rx);
+}
+
+/**
+ * @brief This function handles DMA1 channel7 global interrupt.
+ */
+void DMA1_Channel7_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart2_tx);
 }

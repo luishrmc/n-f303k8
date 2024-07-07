@@ -32,7 +32,7 @@ int main(void)
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     uint32_t tim = 0xFFFF;
-    udInit(&trace, DRV_USART2);
+    // udInit(&trace, DRV_USART2);
 
     commCtrlInit();
     /* Infinite loop */

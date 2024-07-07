@@ -51,6 +51,8 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 uInst *uInst1;
 uInst *uInst2;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* Private function prototypes -----------------------------------------------*/
 PUTCHAR_PROTOTYPE
@@ -110,6 +112,7 @@ void udInit(usartDrv_t *self, uInst instance)
     {
         __HAL_RCC_USART2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_DMA1_CLK_ENABLE();
 
         GPIO_InitStruct.Pin = USART2_TX | USART2_RX;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -133,10 +136,52 @@ void udInit(usartDrv_t *self, uInst instance)
             Error_Handler();
         }
 
+        /* USART2 DMA Init */
+        /* USART2_RX Init */
+        hdma_usart2_rx.Instance = DMA1_Channel6;
+        hdma_usart2_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+        hdma_usart2_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+        hdma_usart2_rx.Init.MemInc = DMA_MINC_ENABLE;
+        hdma_usart2_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        hdma_usart2_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        hdma_usart2_rx.Init.Mode = DMA_NORMAL;
+        hdma_usart2_rx.Init.Priority = DMA_PRIORITY_LOW;
+        if (HAL_DMA_Init(&hdma_usart2_rx) != HAL_OK)
+        {
+            Error_Handler();
+        }
+
+        __HAL_LINKDMA(&huart2, hdmarx, hdma_usart2_rx);
+
+        /* USART2_TX Init */
+        hdma_usart2_tx.Instance = DMA1_Channel7;
+        hdma_usart2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+        hdma_usart2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+        hdma_usart2_tx.Init.MemInc = DMA_MINC_ENABLE;
+        hdma_usart2_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        hdma_usart2_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        hdma_usart2_tx.Init.Mode = DMA_NORMAL;
+        hdma_usart2_tx.Init.Priority = DMA_PRIORITY_LOW;
+        if (HAL_DMA_Init(&hdma_usart2_tx) != HAL_OK)
+        {
+            Error_Handler();
+        }
+
+        __HAL_LINKDMA(&huart2, hdmatx, hdma_usart2_tx);
+
+        /* DMA1_Channel6_IRQn interrupt configuration */
+        HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+        /* DMA1_Channel7_IRQn interrupt configuration */
+        HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 6, 0);
+        HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+
         HAL_NVIC_SetPriority(USART2_IRQn, 10, 0);
         HAL_NVIC_EnableIRQ(USART2_IRQn);
+
         uInst2 = &self->inst;
-        udRxIT(self);
+        // udRxIT(self);
+        udRxDMA(self);
         break;
     }
 
@@ -197,6 +242,28 @@ uint8_t udRxBlck(usartDrv_t *self)
     return HAL_ERROR;
 }
 
+uint8_t udRxDMA(usartDrv_t *self)
+{
+    switch (self->inst)
+    {
+    case DRV_USART1:
+    {
+        return HAL_UART_Receive_DMA(&huart1, self->rxBuff, self->rxSize);
+        break;
+    }
+
+    case DRV_USART2:
+    {
+        return HAL_UART_Receive_DMA(&huart2, self->rxBuff, self->rxSize);
+        break;
+    }
+
+    default:
+        break;
+    }
+    return HAL_ERROR;
+}
+
 uint8_t udTxIT(usartDrv_t *self)
 {
     switch (self->inst)
@@ -241,6 +308,28 @@ uint8_t udTxBlck(usartDrv_t *self)
     return HAL_ERROR;
 }
 
+uint8_t udTxDMA(usartDrv_t *self)
+{
+    switch (self->inst)
+    {
+    case DRV_USART1:
+    {
+        return HAL_UART_Transmit_DMA(&huart1, self->txBuff, self->txSize);
+        break;
+    }
+
+    case DRV_USART2:
+    {
+        return HAL_UART_Transmit_DMA(&huart2, self->txBuff, self->txSize);
+        break;
+    }
+
+    default:
+        break;
+    }
+    return HAL_ERROR;
+}
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     /* Prevent unused argument(s) compilation warning */
@@ -264,5 +353,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         for (uint8_t idx = 0; idx < uart->rxSize; idx++)
             enqueue(&uart->rxQueue, uart->rxBuff[idx]);
     }
-    udRxIT(uart);
+    udRxDMA(uart);
+    // udRxIT(uart);
 }
