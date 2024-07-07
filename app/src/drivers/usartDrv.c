@@ -11,6 +11,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usartDrv.h"
+#include "mainCtrl.h"
 #include <stdlib.h>
 #include "stm32f3xx_hal.h"
 #include "stm32f303x8.h"
@@ -37,19 +38,19 @@
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 
-// declaração da macro offsetof
-#define offsetof(TYPE, MEMBER) ((size_t) & ((TYPE *)0)->MEMBER)
+// declaração da macro OFFSETOF
+#define OFFSETOF(TYPE, MEMBER) ((size_t) & ((TYPE *)0)->MEMBER)
 
-// declaração da macro container_of
-#define container_of(ptr, type, member) ({            \
+// declaração da macro CONTAINER_OF
+#define CONTAINER_OF(ptr, type, member) ({            \
  const __typeof( ((type *)0)->member ) *__mptr = (ptr);    \
- (type *)( (char *)__mptr - offsetof(type,member) ); })
+ (type *)( (char *)__mptr - OFFSETOF(type,member) ); })
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
-uint8_t *uRxData1;
-uint8_t *uRxData2;
+uInst *uInst1;
+uInst *uInst2;
 
 /* Private function prototypes -----------------------------------------------*/
 PUTCHAR_PROTOTYPE
@@ -64,9 +65,9 @@ void udInit(usartDrv_t *self, uInst instance)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     memset(self, 0, sizeof(usartDrv_t));
-    initQueue(&self->rx);
-    initQueue(&self->tx);
+    initQueue(&self->rxQueue);
     self->inst = instance;
+    udDefConf(self);
 
     switch (instance)
     {
@@ -100,9 +101,8 @@ void udInit(usartDrv_t *self, uInst instance)
 
         HAL_NVIC_SetPriority(USART1_IRQn, 6, 0);
         HAL_NVIC_EnableIRQ(USART1_IRQn);
-
-        uRxData1 = &self->rxData;
-        HAL_UART_Receive_IT(&huart1, &self->rxData, 1);
+        uInst1 = &self->inst;
+        udRxIT(self);
         break;
     }
 
@@ -135,9 +135,8 @@ void udInit(usartDrv_t *self, uInst instance)
 
         HAL_NVIC_SetPriority(USART2_IRQn, 10, 0);
         HAL_NVIC_EnableIRQ(USART2_IRQn);
-
-        uRxData2 = &self->rxData;
-        HAL_UART_Receive_IT(&huart2, &self->rxData, 1);
+        uInst2 = &self->inst;
+        udRxIT(self);
         break;
     }
 
@@ -146,38 +145,106 @@ void udInit(usartDrv_t *self, uInst instance)
     }
 }
 
-uint8_t udTx(usartDrv_t *self)
+void udDefConf(usartDrv_t *self)
 {
-    uint8_t data;
+    self->txTimeout = HAL_MAX_DELAY;
+    self->rxTimeout = HAL_MAX_DELAY;
+    self->rxSize = 1;
+    self->txSize = 1;
+}
+
+uint8_t udRxIT(usartDrv_t *self)
+{
     switch (self->inst)
     {
     case DRV_USART1:
     {
-        if (dequeue(&self->tx, &data))
-            HAL_UART_Transmit(&huart1, (uint8_t *)&data, 1, 0xFFFF);
-        else
-            return 0;
+        return HAL_UART_Receive_IT(&huart1, self->rxBuff, self->rxSize);
         break;
     }
 
     case DRV_USART2:
     {
-        if (dequeue(&self->tx, &data))
-            HAL_UART_Transmit(&huart2, (uint8_t *)&data, 1, 0xFFFF);
-        else
-            return 0;
+        return HAL_UART_Receive_IT(&huart2, self->rxBuff, self->rxSize);
         break;
     }
 
     default:
         break;
     }
-    return 1;
+    return HAL_ERROR;
 }
 
-uint8_t udRx(usartDrv_t *self, uint8_t *data)
+uint8_t udRxBlck(usartDrv_t *self)
 {
-    return dequeue(&self->rx, data);
+    switch (self->inst)
+    {
+    case DRV_USART1:
+    {
+        return HAL_UART_Receive(&huart1, self->rxBuff, self->rxSize, self->rxTimeout);
+        break;
+    }
+
+    case DRV_USART2:
+    {
+        return HAL_UART_Receive(&huart2, self->rxBuff, self->rxSize, self->rxTimeout);
+        break;
+    }
+
+    default:
+        break;
+    }
+    return HAL_ERROR;
+}
+
+uint8_t udTxIT(usartDrv_t *self)
+{
+    switch (self->inst)
+    {
+    case DRV_USART1:
+    {
+        return HAL_UART_Transmit_IT(&huart1, self->txBuff, self->txSize);
+        break;
+    }
+
+    case DRV_USART2:
+    {
+        return HAL_UART_Receive_IT(&huart2, self->txBuff, self->txSize);
+        break;
+    }
+
+    default:
+        break;
+    }
+    return HAL_ERROR;
+}
+
+uint8_t udTxBlck(usartDrv_t *self)
+{
+    switch (self->inst)
+    {
+    case DRV_USART1:
+    {
+        return HAL_UART_Transmit(&huart1, self->txBuff, self->txSize, self->txTimeout);
+        break;
+    }
+
+    case DRV_USART2:
+    {
+        return HAL_UART_Transmit(&huart2, self->txBuff, self->txSize, self->txTimeout);
+        break;
+    }
+
+    default:
+        break;
+    }
+    return HAL_ERROR;
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    /* Prevent unused argument(s) compilation warning */
+    UNUSED(huart);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -187,12 +254,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     usartDrv_t *uart;
     if (huart->Instance == USART1)
     {
-        uart = container_of(uRxData1, usartDrv_t, rxData);
+        uart = CONTAINER_OF(uInst1, usartDrv_t, inst);
+        for (uint8_t idx = 0; idx < uart->rxSize; idx++)
+            enqueue(&uart->rxQueue, uart->rxBuff[idx]);
     }
     else if (huart->Instance == USART2)
     {
-        uart = container_of(uRxData2, usartDrv_t, rxData);
+        uart = CONTAINER_OF(uInst2, usartDrv_t, inst);
+        for (uint8_t idx = 0; idx < uart->rxSize; idx++)
+            enqueue(&uart->rxQueue, uart->rxBuff[idx]);
     }
-    enqueue(&uart->rx, uart->rxData);
-    HAL_UART_Receive_IT(huart, &uart->rxData, 1);
+    udRxIT(uart);
 }

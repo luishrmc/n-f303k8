@@ -2,13 +2,12 @@
  * @file commCtrl.h
  * @author your name (you@domain.com)
  * @brief
- * @version 0.1
- * @date 2024-07-06
+ * @version 1.0
+ * @date 2024-07-07
  *
  * @copyright Copyright (c) 2024
  *
  */
-
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __COMMCTRL_H
@@ -16,6 +15,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#include "queue.h"
+#include "usartDrv.h"
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
@@ -28,9 +30,10 @@ typedef enum
 
 typedef struct
 {
-    uint8_t buff[16];
     uint8_t idx;
-} usartComm_t;
+    uint8_t cmd[16];
+    usartDrv_t u1;
+} comm_t;
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -39,7 +42,7 @@ typedef struct
 /* Exported functions prototypes ---------------------------------------------*/
 void commCtrlInit(void);
 void commCtrlRun(void);
-void commCtrlCmd(opCode_t cmd, uint8_t* data);
+void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data);
 
 /* Private defines -----------------------------------------------------------*/
 

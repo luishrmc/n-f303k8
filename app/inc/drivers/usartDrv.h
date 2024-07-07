@@ -16,6 +16,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 #include "queue.h"
+#include <stdbool.h>
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
@@ -28,9 +30,13 @@ typedef enum
 typedef struct
 {
     uInst inst;
-    uint8_t rxData;
-    Queue rx;
-    Queue tx;
+    uint8_t rxSize;
+    uint8_t txSize;
+    uint32_t txTimeout;
+    uint32_t rxTimeout;
+    uint8_t rxBuff[16];
+    uint8_t txBuff[16];
+    Queue rxQueue;
 } usartDrv_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -39,8 +45,11 @@ typedef struct
 
 /* Exported functions prototypes ---------------------------------------------*/
 void udInit(usartDrv_t *self, uInst instance);
-uint8_t udTx(usartDrv_t *self);
-uint8_t udRx(usartDrv_t *self, uint8_t *data);
+void udDefConf(usartDrv_t *self);
+uint8_t udRxIT(usartDrv_t *self);
+uint8_t udRxBlck(usartDrv_t *self);
+uint8_t udTxIT(usartDrv_t *self);
+uint8_t udTxBlck(usartDrv_t *self);
 
 /* Private defines -----------------------------------------------------------*/
 

@@ -2,8 +2,8 @@
  * @file commCtrl.c
  * @author your name (you@domain.com)
  * @brief
- * @version 0.1
- * @date 2024-07-06
+ * @version 1.0
+ * @date 2024-07-07
  *
  * @copyright Copyright (c) 2024
  *
@@ -11,8 +11,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "commCtrl.h"
-#include "usartDrv.h"
 #include <string.h>
+
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -23,61 +23,60 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-usartDrv_t u1;
-usartComm_t u1Comm;
+comm_t u1Comm;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
 
 void commCtrlRun(void)
 {
-    if (udRx(&u1, &u1Comm.buff[u1Comm.idx]))
+    while (dequeue(&u1Comm.u1.rxQueue, &u1Comm.cmd[u1Comm.idx]))
     {
         if (u1Comm.idx > 0)
         {
-            if (u1Comm.buff[u1Comm.idx] == END_BYTE)
+            if (u1Comm.cmd[u1Comm.idx] == END_BYTE)
             {
-                commCtrlCmd(u1Comm.buff[1], &u1Comm.buff[2]);
-                memset(&u1Comm, 0, sizeof(u1Comm));
+                commCtrlCmd(&u1Comm, u1Comm.cmd[1], &u1Comm.cmd[2]);
+                memset(&u1Comm.cmd, 0, sizeof(u1Comm.cmd));
+                u1Comm.idx = 0;
             }
             else
             {
                 u1Comm.idx++;
             }
         }
-        else if (u1Comm.buff[u1Comm.idx] == START_BYTE)
+        else if (u1Comm.cmd[u1Comm.idx] == START_BYTE)
         {
             u1Comm.idx++;
-            return;
+            continue;
         }
     }
 }
 
-void commCtrlCmd(opCode_t cmd, uint8_t *data)
+void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data)
 {
     switch (cmd)
     {
     case CMD_PING:
     {
-        enqueue(&u1.tx, START_BYTE);
-        enqueue(&u1.tx, CMD_PONG);
-        enqueue(&u1.tx, END_BYTE);
-        while (udTx(&u1))
-        {
-        };
-
+        self->u1.txBuff[0] = START_BYTE;
+        self->u1.txBuff[1] = CMD_PONG;
+        self->u1.txBuff[2] = END_BYTE;
+        self->u1.txSize = 3;
+        self->u1.rxSize = 3;
+        // udTxBlck(&self->u1);
+        udTxIT(&self->u1);
         break;
     }
 
     case CMD_PONG:
     {
-        enqueue(&u1.tx, START_BYTE);
-        enqueue(&u1.tx, CMD_PING);
-        enqueue(&u1.tx, END_BYTE);
-        while (udTx(&u1))
-        {
-        };
-
+        self->u1.txBuff[0] = START_BYTE;
+        self->u1.txBuff[1] = CMD_PING;
+        self->u1.txBuff[2] = END_BYTE;
+        self->u1.txSize = 3;
+        // udTxBlck(&self->u1);
+        udTxIT(&self->u1);
         break;
     }
 
@@ -88,6 +87,12 @@ void commCtrlCmd(opCode_t cmd, uint8_t *data)
 
 void commCtrlInit(void)
 {
-    udInit(&u1, DRV_USART1);
-    memset(&u1Comm, 0, sizeof(u1Comm));
+    memset(&u1Comm, 0, sizeof(comm_t));
+    udInit(&u1Comm.u1, DRV_USART1);
+
+    u1Comm.u1.txBuff[0] = START_BYTE;
+    u1Comm.u1.txBuff[1] = CMD_PING;
+    u1Comm.u1.txBuff[2] = END_BYTE;
+    u1Comm.u1.txSize = 3;
+    udTxBlck(&u1Comm.u1);
 }
