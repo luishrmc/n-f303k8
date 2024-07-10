@@ -24,38 +24,38 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-comm_t u1Comm;
+comm_t comm;
 
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
 
-void commCtrlRun(void)
+void commCtrlRunUSART(void)
 {
-    while (dequeue(&u1Comm.u1.rxQueue, &u1Comm.cmd[u1Comm.idx]))
+    while (dequeue(&comm.u1.rxQueue, &comm.cmd[comm.idx]))
     {
-        if (u1Comm.idx > 0)
+        if (comm.idx > 0)
         {
-            if (u1Comm.cmd[u1Comm.idx] == END_BYTE)
+            if (comm.cmd[comm.idx] == END_BYTE)
             {
-                commCtrlCmd(&u1Comm, u1Comm.cmd[1], &u1Comm.cmd[2]);
-                memset(&u1Comm.cmd, 0, sizeof(u1Comm.cmd));
-                u1Comm.idx = 0;
+                commCtrlCmdUSART(&comm, comm.cmd[1], &comm.cmd[2]);
+                memset(&comm.cmd, 0, sizeof(comm.cmd));
+                comm.idx = 0;
             }
             else
             {
-                u1Comm.idx++;
+                comm.idx++;
             }
         }
-        else if (u1Comm.cmd[u1Comm.idx] == START_BYTE)
+        else if (comm.cmd[comm.idx] == START_BYTE)
         {
-            u1Comm.idx++;
+            comm.idx++;
             continue;
         }
     }
 }
 
-void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data)
+void commCtrlCmdUSART(comm_t *self, opCode_t cmd, uint8_t *data)
 {
     switch (cmd)
     {
@@ -88,15 +88,77 @@ void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data)
     }
 }
 
+void commCtrlRunSPI(void)
+{
+    while (dequeue(&comm.s1.rxQueue, &comm.cmd[comm.idx]))
+    {
+        if (comm.idx > 0)
+        {
+            if (comm.cmd[comm.idx] == END_BYTE)
+            {
+                commCtrlCmdSPI(&comm, comm.cmd[1], &comm.cmd[2]);
+                memset(&comm.cmd, 0, sizeof(comm.cmd));
+                comm.idx = 0;
+            }
+            else
+            {
+                comm.idx++;
+            }
+        }
+        else if (comm.cmd[comm.idx] == START_BYTE)
+        {
+            comm.idx++;
+            continue;
+        }
+    }
+}
+
+void commCtrlCmdSPI(comm_t *self, opCode_t cmd, uint8_t *data)
+{
+    switch (cmd)
+    {
+    case CMD_PING:
+    {
+        self->s1.txBuff[0] = START_BYTE;
+        self->s1.txBuff[1] = CMD_PONG;
+        self->s1.txBuff[2] = END_BYTE;
+        self->s1.txSize = 3;
+        printf("PONG\n");
+        // dOutBlck(&self.s1);
+        sdOutIT(&self->s1);
+        break;
+    }
+
+    case CMD_PONG:
+    {
+        self->s1.txBuff[0] = START_BYTE;
+        self->s1.txBuff[1] = CMD_PING;
+        self->s1.txBuff[2] = END_BYTE;
+        self->s1.txSize = 3;
+        printf("PING\n");
+        // sdOutBlck(&self.s1);
+        sdOutIT(&self->s1);
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
 void commCtrlInit(void)
 {
-    memset(&u1Comm, 0, sizeof(comm_t));
-    udInit(&u1Comm.u1, DRV_USART2);
+    memset(&comm, 0, sizeof(comm_t));
+    sdInit(&comm.s1, DRV_SPI1);
 
-    u1Comm.u1.txBuff[0] = START_BYTE;
-    u1Comm.u1.txBuff[1] = CMD_PING;
-    u1Comm.u1.txBuff[2] = END_BYTE;
-    u1Comm.u1.txSize = 3;
-    // udTxBlck(&u1Comm.u1);
-    // udTxDMA(&u1Comm.u1);
+    comm.s1.txBuff[0] = START_BYTE;
+    comm.s1.txBuff[1] = CMD_PING;
+    comm.s1.txBuff[2] = END_BYTE;
+    comm.s1.txSize = 3;
+    comm.s1.rxSize = 3;
+
+    sdNss(SLAVE1_RESET);
+    sdOutBlck(&comm.s1);
+    sdInBlck(&comm.s1);
+    sdNss(SLAVE1_SET);
 }

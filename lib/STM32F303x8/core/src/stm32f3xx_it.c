@@ -18,6 +18,7 @@
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
+extern SPI_HandleTypeDef hspi1;
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern DMA_HandleTypeDef hdma_usart2_tx;
 /******************************************************************************/
@@ -145,4 +146,12 @@ void DMA1_Channel6_IRQHandler(void)
 void DMA1_Channel7_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&hdma_usart2_tx);
+}
+
+/**
+ * @brief This function handles SPI1 global interrupt.
+ */
+void SPI1_IRQHandler(void)
+{
+  HAL_SPI_IRQHandler(&hspi1);
 }

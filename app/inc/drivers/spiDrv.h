@@ -34,9 +34,13 @@ typedef struct
 {
     sInst inst;
     sNss_t slave;
-    uint8_t tx[16];
-    uint8_t rx[16];
-    uint8_t size;
+    uint8_t rxSize;
+    uint8_t txSize;
+    uint32_t txTimeout;
+    uint32_t rxTimeout;
+    uint8_t rxBuff[16];
+    uint8_t txBuff[16];
+    Queue rxQueue;
 } spiDrv_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -45,9 +49,13 @@ typedef struct
 
 /* Exported functions prototypes ---------------------------------------------*/
 void sdInit(spiDrv_t *self, sInst instance);
-uint8_t sdInOut(spiDrv_t *self);
-uint8_t sdIn(spiDrv_t *self, sInst *data);
-uint8_t sdOut(spiDrv_t *self);
+void sdDefConf(spiDrv_t *self);
+uint8_t sdInOutBlck(spiDrv_t *self);
+uint8_t sdInBlck(spiDrv_t *self);
+uint8_t sdOutBlck(spiDrv_t *self);
+uint8_t sdInOutIT(spiDrv_t *self);
+uint8_t sdInIT(spiDrv_t *self);
+uint8_t sdOutIT(spiDrv_t *self);
 uint8_t sdNss(sNss_t slave);
 
 /* Private defines -----------------------------------------------------------*/

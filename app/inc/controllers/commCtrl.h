@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include "queue.h"
 #include "usartDrv.h"
+#include "spiDrv.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -33,6 +34,7 @@ typedef struct
     uint8_t idx;
     uint8_t cmd[16];
     usartDrv_t u1;
+    spiDrv_t s1;
 } comm_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -41,8 +43,11 @@ typedef struct
 
 /* Exported functions prototypes ---------------------------------------------*/
 void commCtrlInit(void);
-void commCtrlRun(void);
-void commCtrlCmd(comm_t *self, opCode_t cmd, uint8_t *data);
+void commCtrlRunUSART(void);
+void commCtrlCmdUSART(comm_t *self, opCode_t cmd, uint8_t *data);
+
+void commCtrlRunSPI(void);
+void commCtrlCmdSPI(comm_t *self, opCode_t cmd, uint8_t *data);
 
 /* Private defines -----------------------------------------------------------*/
 
